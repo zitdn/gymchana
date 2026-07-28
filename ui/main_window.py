@@ -1,5 +1,6 @@
 from PySide6.QtWidgets import QMainWindow, QToolBar, QLabel
 from PySide6.QtGui import QAction
+from ui.canvas import Canvas
 
 
 x_cursor = 0
@@ -16,7 +17,9 @@ class MainWindow(QMainWindow):
         self.create_actions()
         self.create_menu_bar()
         self.create_tool_bar()
+        self.create_canvas()
         self.create_status_bar()
+
         
         
     def setup_ui(self):
@@ -82,6 +85,10 @@ class MainWindow(QMainWindow):
         self.toolbar.addAction(self.action_cone)
         self.toolbar.addAction(self.action_line)
         self.toolbar.addAction(self.action_arc)
+
+    def create_canvas(self):
+        self.canvas = Canvas(self)
+        self.setCentralWidget(self.canvas)
 
     def create_status_bar(self):
         self.statusbar = self.statusBar()
