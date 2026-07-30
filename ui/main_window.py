@@ -13,12 +13,14 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
 
+
         self.setup_ui()
         self.create_actions()
         self.create_menu_bar()
         self.create_tool_bar()
-        self.create_canvas()
         self.create_status_bar()
+        self.create_canvas()
+        
 
         
         
@@ -85,9 +87,14 @@ class MainWindow(QMainWindow):
         self.toolbar.addAction(self.action_cone)
         self.toolbar.addAction(self.action_line)
         self.toolbar.addAction(self.action_arc)
+    def update_coordinates(self, x, y):
+        self.x_label.setText(f'x: {x}')
+        self.y_label.setText(f'y: {y}')
+        
+        
 
     def create_canvas(self):
-        self.canvas = Canvas(self)
+        self.canvas = Canvas(self.update_coordinates, self)
         self.setCentralWidget(self.canvas)
 
     def create_status_bar(self):
