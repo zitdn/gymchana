@@ -3,20 +3,20 @@ from PySide6.QtGui import QAction
 from ui.canvas import Canvas
 from models.track import Track
 from models.cone import Cone
+from models.tools import Tool
 
 
-x_cursor = 0
-y_cursor = 0
-cone_count = 0
 zoom = 100
 
 
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
+        self.current_tool = Tool.CONE
         self.track = Track()
         self.setup_ui()
         self.create_actions()
+        self.connect_actions()
         self.create_menu_bar()
         self.create_tool_bar()
         self.create_status_bar()
@@ -51,6 +51,16 @@ class MainWindow(QMainWindow):
         # Помощь
         self.action_about = QAction("О программе", self)
 
+    def connect_actions(self):
+        self.action_cone.triggered.connect(
+            lambda : self.set_tool(Tool.CONE)
+        )
+        self.action_line.triggered.connect(
+            lambda : self.set_tool(Tool.LINE)
+        )
+        self.action_arc.triggered.connect(
+            lambda : self.set_tool(Tool.ARC) 
+        )
     def create_menu_bar(self):
         menu = self.menuBar()
         file_menu = menu.addMenu('Файл')
@@ -93,10 +103,39 @@ class MainWindow(QMainWindow):
         self.x_label.setText(f'x: {x}')
         self.y_label.setText(f'y: {y}')       
 
-    def on_canvas_click(self, x, y):
+    def set_tool(self, tool):
+        self.current_tool = tool
+        if self.current_tool == Tool.CONE:
+            self.tool_label.setText('Инструмент: Конус')
+        elif self.current_tool == Tool.LINE:
+            self.tool_label.setText('Инструмент: Линия')
+        elif self.current_tool == Tool.ARC:
+            self.tool_label.setText('Инструмент: Дуга')
+        print(self.current_tool)
+
+    def update_cone_count(self):
+        self.cone_label.setText(
+            f'Конусов: {len(self.track.cones)}'
+            )
+    
+    def create_cone(self, x, y):
         cone = Cone(x, y)
         self.track.add_cone(cone)
+        self.update_cone_count()
+        
+        
+        
+
+    def on_canvas_click(self, x, y):
+        if self.current_tool == Tool.CONE:
+            self.create_cone(x, y)
+            
+        else:
+            print('another')
+            
         self.canvas.update()
+        
+        
 
     def create_canvas(self):
         self.canvas = Canvas(self.track, self.update_coordinates, self.on_canvas_click, self)
@@ -104,11 +143,13 @@ class MainWindow(QMainWindow):
 
     def create_status_bar(self):
         self.statusbar = self.statusBar()
-        self.x_label = QLabel(f'x: {x_cursor}', self)
-        self.y_label = QLabel(f'y: {y_cursor}', self)
+        self.x_label = QLabel(f'x: {0}', self)
+        self.y_label = QLabel(f'y: {0}', self)
         self.zoom_label = QLabel(f'Масштаб: {zoom}%', self)
-        self.cone_label = QLabel(f'Конусов: {cone_count}', self)
+        self.cone_label = QLabel(f'Конусов: 0', self)
+        self.tool_label = QLabel('Инструмент: - ', self)
         self.statusbar.addPermanentWidget(self.x_label)
         self.statusbar.addPermanentWidget(self.y_label)
         self.statusbar.addPermanentWidget(self.zoom_label)
         self.statusbar.addPermanentWidget(self.cone_label)
+        self.statusbar.addPermanentWidget(self.tool_label)

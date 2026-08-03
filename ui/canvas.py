@@ -15,10 +15,9 @@ class Canvas(QWidget):
         painter = QPainter(self)
         painter.fillRect(self.rect(), Qt.white)
         for cone in self.track.cones:
-            painter.drawEllipse((cone.x-5), (cone.y-5), 10, 10)
+            cone.draw(painter)
 
         print(len(self.track.cones))
-
         painter.end()
 
     def mouseMoveEvent(self, event):
