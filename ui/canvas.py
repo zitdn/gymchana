@@ -4,15 +4,20 @@ from PySide6.QtCore import Qt
 
 
 class Canvas(QWidget):
-    def __init__(self, mouse_callback, parent=None ):
+    def __init__(self, track, mouse_move_callback, mouse_click_callback, parent=None):
         super().__init__(parent)
         self.setMouseTracking(True)
-
-        self.mouse_callback = mouse_callback
+        self.track = track
+        self.mouse_move_callback = mouse_move_callback
+        self.mouse_click_callback = mouse_click_callback
 
     def paintEvent(self, event):
         painter = QPainter(self)
         painter.fillRect(self.rect(), Qt.white)
+        for cone in self.track.cones:
+            painter.drawEllipse((cone.x-5), (cone.y-5), 10, 10)
+
+        print(len(self.track.cones))
 
         painter.end()
 
@@ -20,4 +25,10 @@ class Canvas(QWidget):
         x_cursor = event.x()
         y_cursor = event.y()
 
-        self.mouse_callback(x_cursor, y_cursor )
+        self.mouse_move_callback(x_cursor, y_cursor)
+
+    def mousePressEvent(self, event):
+        x_cursor = event.x()
+        y_cursor = event.y()
+
+        self.mouse_click_callback(x_cursor, y_cursor)

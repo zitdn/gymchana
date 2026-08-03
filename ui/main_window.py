@@ -1,6 +1,8 @@
 from PySide6.QtWidgets import QMainWindow, QToolBar, QLabel
 from PySide6.QtGui import QAction
 from ui.canvas import Canvas
+from models.track import Track
+from models.cone import Cone
 
 
 x_cursor = 0
@@ -12,8 +14,7 @@ zoom = 100
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-
-
+        self.track = Track()
         self.setup_ui()
         self.create_actions()
         self.create_menu_bar()
@@ -87,14 +88,18 @@ class MainWindow(QMainWindow):
         self.toolbar.addAction(self.action_cone)
         self.toolbar.addAction(self.action_line)
         self.toolbar.addAction(self.action_arc)
+
     def update_coordinates(self, x, y):
         self.x_label.setText(f'x: {x}')
-        self.y_label.setText(f'y: {y}')
-        
-        
+        self.y_label.setText(f'y: {y}')       
+
+    def on_canvas_click(self, x, y):
+        cone = Cone(x, y)
+        self.track.add_cone(cone)
+        self.canvas.update()
 
     def create_canvas(self):
-        self.canvas = Canvas(self.update_coordinates, self)
+        self.canvas = Canvas(self.track, self.update_coordinates, self.on_canvas_click, self)
         self.setCentralWidget(self.canvas)
 
     def create_status_bar(self):
