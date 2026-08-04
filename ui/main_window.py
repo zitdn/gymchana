@@ -12,7 +12,8 @@ zoom = 100
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.current_tool = Tool.CONE
+        self.selected_cone = None
+        self.current_tool = Tool.SELECT
         self.track = Track()
         self.setup_ui()
         self.create_actions()
@@ -45,6 +46,7 @@ class MainWindow(QMainWindow):
         self.action_zoom_in = QAction('Приблизить', self)
         self.action_zoom_out = QAction('Отдалить', self)
         # Инструменты
+        self.action_select = QAction("Выбор", self)
         self.action_cone = QAction("Конус", self) 
         self.action_line = QAction('Линия', self)
         self.action_arc = QAction('Дуга', self)
@@ -52,6 +54,9 @@ class MainWindow(QMainWindow):
         self.action_about = QAction("О программе", self)
 
     def connect_actions(self):
+        self.action_select.triggered.connect(
+            lambda : self.set_tool(Tool.SELECT)
+        )
         self.action_cone.triggered.connect(
             lambda : self.set_tool(Tool.CONE)
         )
@@ -61,6 +66,7 @@ class MainWindow(QMainWindow):
         self.action_arc.triggered.connect(
             lambda : self.set_tool(Tool.ARC) 
         )
+
     def create_menu_bar(self):
         menu = self.menuBar()
         file_menu = menu.addMenu('Файл')
@@ -81,6 +87,7 @@ class MainWindow(QMainWindow):
         view_menu.addAction(self.action_zoom_out)
        
         tools_menu = menu.addMenu('Инструменты')
+        tools_menu.addAction(self.action_select)
         tools_menu.addAction(self.action_cone) 
         tools_menu.addAction(self.action_line)
         tools_menu.addAction(self.action_arc)
@@ -95,6 +102,7 @@ class MainWindow(QMainWindow):
         self.toolbar.addAction(self.action_open)
         self.toolbar.addAction(self.action_save)
         self.toolbar.addSeparator()
+        self.toolbar.addAction(self.action_select)
         self.toolbar.addAction(self.action_cone)
         self.toolbar.addAction(self.action_line)
         self.toolbar.addAction(self.action_arc)
@@ -111,6 +119,8 @@ class MainWindow(QMainWindow):
             self.tool_label.setText('Инструмент: Линия')
         elif self.current_tool == Tool.ARC:
             self.tool_label.setText('Инструмент: Дуга')
+        elif self.current_tool == Tool.SELECT:
+            self.tool_label.setText('Инструмент: Выбор')
         print(self.current_tool)
 
     def update_cone_count(self):
@@ -123,18 +133,27 @@ class MainWindow(QMainWindow):
         self.track.add_cone(cone)
         self.update_cone_count()
         
-        
-        
-
     def on_canvas_click(self, x, y):
-        if self.current_tool == Tool.CONE:
+        
+        if self.current_tool == Tool.SELECT:
+            cone = self.track.get_cone_at(x, y)
+            self.select_cone(cone)
+            print(self.selected_cone)
+        elif self.current_tool == Tool.CONE:
             self.create_cone(x, y)
             
         else:
             print('another')
             
-        self.canvas.update()
-        
+        self.canvas.update() 
+
+    def select_cone(self, cone):
+        if self.selected_cone:
+            self.selected_cone.selected= False
+        if cone:
+            cone.selected = True
+        self.selected_cone = cone
+
         
 
     def create_canvas(self):
@@ -147,7 +166,7 @@ class MainWindow(QMainWindow):
         self.y_label = QLabel(f'y: {0}', self)
         self.zoom_label = QLabel(f'Масштаб: {zoom}%', self)
         self.cone_label = QLabel(f'Конусов: 0', self)
-        self.tool_label = QLabel('Инструмент: - ', self)
+        self.tool_label = QLabel('Инструмент: Выбор ', self)
         self.statusbar.addPermanentWidget(self.x_label)
         self.statusbar.addPermanentWidget(self.y_label)
         self.statusbar.addPermanentWidget(self.zoom_label)
