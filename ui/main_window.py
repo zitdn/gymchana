@@ -138,7 +138,7 @@ class MainWindow(QMainWindow):
         if self.current_tool == Tool.SELECT:
             cone = self.track.get_cone_at(x, y)
             self.select_cone(cone)
-            print(self.selected_cone)
+            return cone
         elif self.current_tool == Tool.CONE:
             self.create_cone(x, y)
             
@@ -153,8 +153,6 @@ class MainWindow(QMainWindow):
         if cone:
             cone.selected = True
         self.selected_cone = cone
-
-        
 
     def create_canvas(self):
         self.canvas = Canvas(self.track, self.update_coordinates, self.on_canvas_click, self)

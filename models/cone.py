@@ -22,4 +22,6 @@ class Cone ():
         distance = ((x- self.x)**2+ (y- self.y)**2)**0.5
         return distance <= self.radius
     
-      
+    def move_to(self, x, y):
+        self.x = x
+        self.y = y

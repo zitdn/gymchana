@@ -7,6 +7,8 @@ class Canvas(QWidget):
     def __init__(self, track, mouse_move_callback, mouse_click_callback, parent=None):
         super().__init__(parent)
         self.setMouseTracking(True)
+        self.dragging = False
+        self.drag_obj = None
         self.track = track
         self.mouse_move_callback = mouse_move_callback
         self.mouse_click_callback = mouse_click_callback
@@ -23,11 +25,21 @@ class Canvas(QWidget):
     def mouseMoveEvent(self, event):
         x_cursor = event.x()
         y_cursor = event.y()
+        if self.dragging and self.drag_obj:
+            self.drag_obj.move_to(x_cursor, y_cursor)
+            self.update()
 
         self.mouse_move_callback(x_cursor, y_cursor)
 
     def mousePressEvent(self, event):
         x_cursor = event.x()
         y_cursor = event.y()
+        obj = self.mouse_click_callback(x_cursor,y_cursor)
+        if obj:
+            self.drag_obj = obj
+            self.dragging = True
+        
 
-        self.mouse_click_callback(x_cursor, y_cursor)
+    def mouseReleaseEvent(self, event):
+        self.drag_obj = None
+        self.dragging = False
