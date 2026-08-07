@@ -1,4 +1,5 @@
 from PySide6.QtWidgets import QMainWindow, QToolBar, QLabel
+from PySide6.QtCore import Signal
 from PySide6.QtGui import QAction
 from ui.canvas import Canvas
 from models.track import Track
@@ -12,7 +13,8 @@ zoom = 100
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.selected_cone = None
+        self.selected_obj = None
+        self.dragging = False
         self.current_tool = Tool.SELECT
         self.track = Track()
         self.setup_ui()
@@ -109,7 +111,10 @@ class MainWindow(QMainWindow):
 
     def update_coordinates(self, x, y):
         self.x_label.setText(f'x: {x}')
-        self.y_label.setText(f'y: {y}')       
+        self.y_label.setText(f'y: {y}')   
+        if self.dragging and self.selected_obj:
+            self.selected_obj.move_to(x, y)
+        self.canvas.update() 
 
     def set_tool(self, tool):
         self.current_tool = tool
@@ -125,38 +130,52 @@ class MainWindow(QMainWindow):
 
     def update_cone_count(self):
         self.cone_label.setText(
-            f'Конусов: {len(self.track.cones)}'
+            f'Конусов: {len(self.track.objects)}'
             )
     
     def create_cone(self, x, y):
         cone = Cone(x, y)
-        self.track.add_cone(cone)
+        self.track.add_object(cone)
         self.update_cone_count()
+        self.canvas.update()
         
     def on_canvas_click(self, x, y):
         
         if self.current_tool == Tool.SELECT:
-            cone = self.track.get_cone_at(x, y)
-            self.select_cone(cone)
-            return cone
+            obj = self.track.get_object_at(x, y)
+            if obj:
+                self.dragging = True
+                self.select_object(obj)
+                
+            else:
+                self.select_object(None)
+            self.canvas.update()
         elif self.current_tool == Tool.CONE:
             self.create_cone(x, y)
             
         else:
             print('another')
-            
-        self.canvas.update() 
 
-    def select_cone(self, cone):
-        if self.selected_cone:
-            self.selected_cone.selected= False
-        if cone:
-            cone.selected = True
-        self.selected_cone = cone
+    def on_canvas_release(self):
+        self.dragging = False
+        
+            
+        
+
+    def select_object(self, obj):
+        if self.selected_obj:
+            self.selected_obj.selected= False
+        if obj:
+            obj.selected = True
+        self.selected_obj = obj
 
     def create_canvas(self):
-        self.canvas = Canvas(self.track, self.update_coordinates, self.on_canvas_click, self)
+        self.canvas = Canvas(self.track,  self)
+        self.canvas.mouse_moved.connect(self.update_coordinates)
+        self.canvas.mouse_pressed.connect(self.on_canvas_click)
+        self.canvas.mouse_released.connect(self.on_canvas_release)
         self.setCentralWidget(self.canvas)
+        
 
     def create_status_bar(self):
         self.statusbar = self.statusBar()
